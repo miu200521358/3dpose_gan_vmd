@@ -30,6 +30,10 @@ python3系 で以下をインストールして下さい
 - [openpose_pose_coco.prototxt](https://github.com/opencv/opencv_extra/blob/3.4.1/testdata/dnn/openpose_pose_coco.prototxt)
 - [pose_iter_440000.caffemodel](http://posefs1.perception.cs.cmu.edu/OpenPose/models/pose/coco/pose_iter_440000.caffemodel)
 
+`train`ディレクトリを作成し、以下の学習データをダウンロードして配置して下さい。
+
+- [gen_epoch_500.npz](https://github.com/DwangoMediaVillage/3dpose_gan/blob/master/sample/gen_epoch_500.npz?raw=true)
+
 ## 実行方法
 
 1. [Openpose簡易起動バッチ](https://github.com/miu200521358/openpose-simple) で データを解析する
@@ -45,8 +49,8 @@ python3系 で以下をインストールして下さい
     - `yes`の場合、詳細ログを出力し、ログメッセージの他、デバッグ用画像も出力される（その分遅い）
 1. 処理開始
 1. 処理が終了すると、2.の結果ディレクトリパスに、以下の結果が出力される。
-    - pos_gan.txt … 全フレームの関節データ([VMD-3d-pose-baseline-multi](https://github.com/miu200521358/VMD-3d-pose-baseline-multi) に必要) 詳細：[Output](doc/Output.md)
-    - smoothed_gan.txt … 全フレームの2D位置データ([VMD-3d-pose-baseline-multi](https://github.com/miu200521358/VMD-3d-pose-baseline-multi) に必要) 詳細：[Output](doc/Output.md)
+    - pos_gan.txt … 全フレームの関節データ([VMD-3d-pose-baseline-multi](https://github.com/miu200521358/VMD-3d-pose-baseline-multi) に必要) 詳細：[Output](https://github.com/miu200521358/3d-pose-baseline-vmd/blob/master/doc/Output.md)
+    - smoothed_gan.txt … 全フレームの2D位置データ([VMD-3d-pose-baseline-multi](https://github.com/miu200521358/VMD-3d-pose-baseline-multi) に必要) 詳細：[Output](https://github.com/miu200521358/3d-pose-baseline-vmd/blob/master/doc/Output.md)
     - movie_smoothing_gan.gif … フレームごとの姿勢を結合したアニメーションGIF
     - frame3d_gan/gan_0000000000xx.png … 各フレームの3D姿勢
     - frame3d_gan/gan_0000000000xx_xxx.png … 各フレームの角度別3D姿勢(詳細ログyes時のみ)
