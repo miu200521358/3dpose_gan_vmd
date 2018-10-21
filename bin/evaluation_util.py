@@ -58,11 +58,13 @@ def create_img(arr, img=None):
     qs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
     xs = arr[0::2].copy()
     ys = arr[1::2].copy()
+    
+    # out_directory = "img_sample"
+    # os.makedirs(out_directory, exist_ok=True)
+
     if img is None:
-        xs *= 80
-        xs += 100
-        ys *= 80
-        ys += 150
+        xs /= 1000
+        ys /= 1000
         xs = xs.astype('i')
         ys = ys.astype('i')
         img = np.zeros((350, 200, 3), dtype=np.uint8) + 160
@@ -72,6 +74,46 @@ def create_img(arr, img=None):
     for i, (p, q) in enumerate(zip(ps, qs)):
         c = 1 / (len(ps) - 1) * i
         b, g, r = color_jet(c)
+
+        # sample_img = np.zeros((350, 200, 3), dtype=np.uint8) + 160
+        # sample_img = cv2.line(sample_img, (xs[p], ys[p]), (xs[q], ys[q]), (b, g, r), 2)
+        # cv2.imwrite(os.path.join(out_directory, "sample{0:2d}.png".format(i)), sample_img)
+
+        img = cv2.line(img, (xs[p], ys[p]), (xs[q], ys[q]), (b, g, r), 2)
+    for i in range(17):
+        c = 1 / 16 * i
+        b, g, r = color_jet(c)
+        img = cv2.circle(img, (xs[i], ys[i]), 3, (b, g, r), 3)
+    return img
+
+
+def create_img_xyz(x1, y1, z1, theta, img=None):
+    ps = [0, 1, 2, 0, 4, 5, 0, 7, 8, 9, 8, 11, 12, 8, 14, 15]
+    qs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+
+    xx = x1 * np.cos(theta) + z1 * np.sin(theta)
+    fake = np.stack((xx, y1), axis=-1).flatten()
+
+    xs = fake[0::2].copy()
+    ys = fake[1::2].copy()
+
+    if img is None:
+        xs /= 10
+        ys /= 10
+        xs = xs.astype('i')
+        ys = ys.astype('i')
+        img = np.zeros((350, 200, 3), dtype=np.uint8) + 160
+        img = cv2.line(img, (100, 0), (100, 350), (255, 255, 255), 1)
+        img = cv2.line(img, (0, 150), (200, 150), (255, 255, 255), 1)
+        img = cv2.rectangle(img, (0, 0), (200, 350), (255, 255, 255), 3)
+    for i, (p, q) in enumerate(zip(ps, qs)):
+        c = 1 / (len(ps) - 1) * i
+        b, g, r = color_jet(c)
+
+        # sample_img = np.zeros((350, 200, 3), dtype=np.uint8) + 160
+        # sample_img = cv2.line(sample_img, (xs[p], ys[p]), (xs[q], ys[q]), (b, g, r), 2)
+        # cv2.imwrite(os.path.join(out_directory, "sample{0:2d}.png".format(i)), sample_img)
+
         img = cv2.line(img, (xs[p], ys[p]), (xs[q], ys[q]), (b, g, r), 2)
     for i in range(17):
         c = 1 / 16 * i
