@@ -34,6 +34,8 @@ def read_openpose_json(openpose_output_dir, idx, is_debug=False):
     _past_tmp_data = []
     _tmp_data = []
     ### extract x,y and ignore confidence score
+    is_started = False
+    start_frame_index = 0
     for file_name in json_files:
         logger.debug("reading {0}".format(file_name))
         _file = os.path.join(openpose_output_dir, file_name)
@@ -43,9 +45,13 @@ def read_openpose_json(openpose_output_dir, idx, is_debug=False):
         # 12桁の数字文字列から、フレームINDEX取得
         frame_indx = int(re.findall("(\d{12})", file_name)[0])
         
-        if frame_indx <= 0:
+        if frame_indx <= 0 or is_started == False:
             # 最初のフレームはそのまま登録するため、INDEXをそのまま指定
             _tmp_data = data["people"][idx]["pose_keypoints_2d"]
+            # 開始したらフラグを立てる
+            is_started = True
+            # 開始フレームインデックス保持
+            start_frame_index = frame_indx
         else:
             # 前フレームと一番近い人物データを採用する
             past_xy = cache[frame_indx - 1]
@@ -112,170 +118,6 @@ def read_openpose_json(openpose_output_dir, idx, is_debug=False):
             xy.append(_data[o])
             xy.append(_data[o+1])
         
-        if frame_indx > 0:
-            # 1F前のxy座標
-            past_xy = cache[frame_indx - 1]
-
-            # # 手 -------------------------------------------------------
-
-            # # 右肩 <--> 右肩 の距離差分
-            # diff_RRShoulder_x = abs(np.diff([xy[4], past_xy[4]]))
-            # diff_RRShoulder_y = abs(np.diff([xy[5], past_xy[5]]))
-            # # 右ひじ <--> 右ひじ の距離差分
-            # diff_RRElbow_x = abs(np.diff([xy[6], past_xy[6]]))
-            # diff_RRElbow_y = abs(np.diff([xy[7], past_xy[7]]))
-            # # 右手首 <--> 右手首 の距離差分
-            # diff_RRWrist_x = abs(np.diff([xy[8], past_xy[8]]))
-            # diff_RRWrist_y = abs(np.diff([xy[9], past_xy[9]]))
-
-            # # 右肩 <--> 左肩 の距離差分
-            # diff_RLShoulder_x = abs(np.diff([xy[4], past_xy[10]])[0])
-            # diff_RLShoulder_y = abs(np.diff([xy[5], past_xy[11]])[0])
-            # # 右ひじ <--> 左ひじ の距離差分
-            # diff_RLElbow_x = abs(np.diff([xy[6], past_xy[12]])[0])
-            # diff_RLElbow_y = abs(np.diff([xy[7], past_xy[13]])[0])
-            # # 右手首 <--> 左手首 の距離差分
-            # diff_RLWrist_x = abs(np.diff([xy[8], past_xy[14]])[0])
-            # diff_RLWrist_y = abs(np.diff([xy[9], past_xy[15]])[0])
-
-            # logger.debug("diff_RRShoulder_x: %d <--> %s", diff_RRShoulder_x, diff_RLShoulder_x)
-            # logger.debug("diff_RRShoulder_y: %d <--> %s", diff_RRShoulder_y, diff_RLShoulder_y)
-            # logger.debug("diff_RRElbow_x: %d <--> %s", diff_RRElbow_x, diff_RLElbow_x)
-            # logger.debug("diff_RRElbow_y: %d <--> %s", diff_RRElbow_y, diff_RLElbow_y)
-            # logger.debug("diff_RRWrist_x: %d <--> %s", diff_RRWrist_x, diff_RLWrist_x)
-            # logger.debug("diff_RRWrist_y: %d <--> %s", diff_RRWrist_y, diff_RLWrist_x)
-
-            # # 差分ポイント制で判定
-            # diff_point = 0
-            # diff_point += 1 if diff_RRShoulder_x > diff_RLShoulder_x else 0
-            # diff_point += 1 if diff_RRShoulder_y > diff_RLShoulder_y else 0
-            # diff_point += 1 if diff_RRElbow_x > diff_RLElbow_x else 0
-            # diff_point += 1 if diff_RRElbow_y > diff_RLElbow_y else 0
-            # diff_point += 1 if diff_RRWrist_x > diff_RLWrist_x else 0
-            # diff_point += 1 if diff_RRWrist_y > diff_RLWrist_y else 0
-
-            # logger.debug("diff_point: %d", diff_point)
-
-            # # 半分以上が差分で、右同士の方が、左右よりも差が大きい場合、反転とみなす
-            # if diff_point == 6:
-            #     logger.info("＊手左右反転 {0}".format(frame_indx))
-            #     logger.info("diff_RRShoulder_x: %d <--> %s", diff_RRShoulder_x, diff_RLShoulder_x)
-            #     logger.info("diff_RRShoulder_y: %d <--> %s", diff_RRShoulder_y, diff_RLShoulder_y)
-            #     logger.info("diff_RRElbow_x: %d <--> %s", diff_RRElbow_x, diff_RLElbow_x)
-            #     logger.info("diff_RRElbow_y: %d <--> %s", diff_RRElbow_y, diff_RLElbow_y)
-            #     logger.info("diff_RRWrist_x: %d <--> %s", diff_RRWrist_x, diff_RLWrist_x)
-            #     logger.info("diff_RRWrist_y: %d <--> %s", diff_RRWrist_y, diff_RLWrist_x)
-
-            #     # 右手系に左手の値を設定
-            #     RShoulder_x = xy[10]
-            #     RShoulder_y = xy[11]
-            #     RElbow_x = xy[12]
-            #     RElbow_y = xy[13]
-            #     RWrist_x = xy[14]
-            #     RWrist_y = xy[15]
-
-            #     # 左手系に右手の値を設定
-            #     LShoulder_x = xy[4]
-            #     LShoulder_y = xy[5]
-            #     LElbow_x = xy[6]
-            #     LElbow_y = xy[7]
-            #     LWrist_x = xy[8]
-            #     LWrist_y = xy[9]
-
-            #     # 取得し直した値を再設定
-            #     xy[4] = RShoulder_x
-            #     xy[5] = RShoulder_y
-            #     xy[6] = RElbow_x
-            #     xy[7] = RElbow_y
-            #     xy[8] = RWrist_x
-            #     xy[9] = RWrist_y
-            #     xy[10] = LShoulder_x
-            #     xy[11] = LShoulder_y
-            #     xy[12] = LElbow_x
-            #     xy[13] = LElbow_y
-            #     xy[14] = LWrist_x
-            #     xy[15] = LWrist_y
-
-            # # 足 -------------------------------------------------------
-
-            # # 右尻 <--> 右尻 の距離差分
-            # diff_RRHip_x = abs(np.diff([xy[16], past_xy[16]]))
-            # diff_RRHip_y = abs(np.diff([xy[17], past_xy[17]]))
-            # # 右ひざ <--> 右ひざ の距離差分
-            # diff_RRKnee_x = abs(np.diff([xy[18], past_xy[18]]))
-            # diff_RRKnee_y = abs(np.diff([xy[19], past_xy[19]]))
-            # # 右足首 <--> 右足首 の距離差分
-            # diff_RRAnkle_x = abs(np.diff([xy[20], past_xy[20]]))
-            # diff_RRAnkle_y = abs(np.diff([xy[21], past_xy[21]]))
-
-            # # 右尻 <--> 左尻 の距離差分
-            # diff_RLHip_x = abs(np.diff([xy[16], past_xy[22]])[0])
-            # diff_RLHip_y = abs(np.diff([xy[17], past_xy[23]])[0])
-            # # 右ひざ <--> 左ひざ の距離差分
-            # diff_RLKnee_x = abs(np.diff([xy[18], past_xy[24]])[0])
-            # diff_RLKnee_y = abs(np.diff([xy[19], past_xy[25]])[0])
-            # # 右足首 <--> 左足首 の距離差分
-            # diff_RLAnkle_x = abs(np.diff([xy[20], past_xy[26]])[0])
-            # diff_RLAnkle_y = abs(np.diff([xy[21], past_xy[27]])[0])
-
-            # logger.debug("diff_RRHip_x: %d <--> %s", diff_RRHip_x, diff_RLHip_x)
-            # logger.debug("diff_RRHip_y: %d <--> %s", diff_RRHip_y, diff_RLHip_y)
-            # logger.debug("diff_RRKnee_x: %d <--> %s", diff_RRKnee_x, diff_RLKnee_x)
-            # logger.debug("diff_RRKnee_y: %d <--> %s", diff_RRKnee_y, diff_RLKnee_y)
-            # logger.debug("diff_RRAnkle_x: %d <--> %s", diff_RRAnkle_x, diff_RLAnkle_x)
-            # logger.debug("diff_RRAnkle_y: %d <--> %s", diff_RRAnkle_y, diff_RLAnkle_x)
-
-            # # 差分ポイント制で判定
-            # diff_point = 0
-            # diff_point += 1 if diff_RRHip_x > diff_RLHip_x else 0
-            # diff_point += 1 if diff_RRHip_y > diff_RLHip_y else 0
-            # diff_point += 1 if diff_RRKnee_x > diff_RLKnee_x else 0
-            # diff_point += 1 if diff_RRKnee_y > diff_RLKnee_y else 0
-            # diff_point += 1 if diff_RRAnkle_x > diff_RLAnkle_x else 0
-            # diff_point += 1 if diff_RRAnkle_y > diff_RLAnkle_y else 0
-
-            # logger.debug("diff_point: %d", diff_point)
-
-            # # 半分以上が差分で、右同士の方が、左右よりも差が大きい場合、反転とみなす
-            # if diff_point == 6:
-            #     logger.info("＊足左右反転 {0}".format(frame_indx))
-            #     logger.info("diff_RRHip_x: %d <--> %s", diff_RRHip_x, diff_RLHip_x)
-            #     logger.info("diff_RRHip_y: %d <--> %s", diff_RRHip_y, diff_RLHip_y)
-            #     logger.info("diff_RRKnee_x: %d <--> %s", diff_RRKnee_x, diff_RLKnee_x)
-            #     logger.info("diff_RRKnee_y: %d <--> %s", diff_RRKnee_y, diff_RLKnee_y)
-            #     logger.info("diff_RRAnkle_x: %d <--> %s", diff_RRAnkle_x, diff_RLAnkle_x)
-            #     logger.info("diff_RRAnkle_y: %d <--> %s", diff_RRAnkle_y, diff_RLAnkle_x)
-
-            #     # 右足系に左足の値を設定
-            #     RHip_x = xy[22]
-            #     RHip_y = xy[23]
-            #     RKnee_x = xy[24]
-            #     RKnee_y = xy[25]
-            #     RAnkle_x = xy[26]
-            #     RAnkle_y = xy[27]
-
-            #     # 左足系に右足の値を設定
-            #     LHip_x = xy[16]
-            #     LHip_y = xy[17]
-            #     LKnee_x = xy[18]
-            #     LKnee_y = xy[19]
-            #     LAnkle_x = xy[20]
-            #     LAnkle_y = xy[21]
-
-            #     # 取得し直した値を再設定
-            #     xy[16] = RHip_x
-            #     xy[17] = RHip_y
-            #     xy[18] = RKnee_x
-            #     xy[19] = RKnee_y
-            #     xy[20] = RAnkle_x
-            #     xy[21] = RAnkle_y
-            #     xy[22] = LHip_x
-            #     xy[23] = LHip_y
-            #     xy[24] = LKnee_x
-            #     xy[25] = LKnee_y
-            #     xy[26] = LAnkle_x
-            #     xy[27] = LAnkle_y
-
         logger.debug("found {0} for frame {1}".format(xy, str(frame_indx)))
         #add xy to frame
         cache[frame_indx] = xy
@@ -381,7 +223,7 @@ def read_openpose_json(openpose_output_dir, idx, is_debug=False):
         smoothed[frame] = frames_joint_median
 
     # return frames cache incl. smooth 18 joints (x,y)
-    return smoothed
+    return start_frame_index, smoothed
 
 def get_nearest_idx(target_list, num):
     """

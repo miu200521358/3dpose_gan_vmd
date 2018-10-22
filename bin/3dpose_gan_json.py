@@ -197,7 +197,7 @@ def main(args):
     #正規化済みOpenpose位置情報ファイル
     smoothedf = open(subdir +'/smoothed_gan.txt', 'w')
 
-    smoothed = openpose_utils.read_openpose_json(args.input, 0)
+    start_frame_index, smoothed = openpose_utils.read_openpose_json(args.input, 0)
 
     before_pose = None
     png_lib = []
