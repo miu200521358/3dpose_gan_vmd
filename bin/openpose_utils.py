@@ -43,18 +43,18 @@ def read_openpose_json(openpose_output_dir, idx, is_debug=False):
         data = json.load(open(_file))
 
         # 12桁の数字文字列から、フレームINDEX取得
-        frame_indx = int(re.findall("(\d{12})", file_name)[0])
+        frame_idx = int(re.findall("(\d{12})", file_name)[0])
         
-        if frame_indx <= 0 or is_started == False:
+        if frame_idx <= 0 or is_started == False:
             # 最初のフレームはそのまま登録するため、INDEXをそのまま指定
             _tmp_data = data["people"][idx]["pose_keypoints_2d"]
             # 開始したらフラグを立てる
             is_started = True
             # 開始フレームインデックス保持
-            start_frame_index = frame_indx
+            start_frame_index = frame_idx
         else:
             # 前フレームと一番近い人物データを採用する
-            past_xy = cache[frame_indx - 1]
+            past_xy = cache[frame_idx - 1]
 
             # データが取れていたら、そのINDEX数分配列を生成。取れてなかったら、とりあえずINDEX分確保
             target_num = len(data["people"]) if len(data["people"]) >= idx + 1 else idx + 1
@@ -118,9 +118,9 @@ def read_openpose_json(openpose_output_dir, idx, is_debug=False):
             xy.append(_data[o])
             xy.append(_data[o+1])
         
-        logger.debug("found {0} for frame {1}".format(xy, str(frame_indx)))
+        logger.debug("found {0} for frame {1}".format(xy, str(frame_idx)))
         #add xy to frame
-        cache[frame_indx] = xy
+        cache[frame_idx] = xy
 
     # plt.figure(1)
     # drop_curves_plot = show_anim_curves(cache, plt)
@@ -148,7 +148,7 @@ def read_openpose_json(openpose_output_dir, idx, is_debug=False):
 
     ### smooth by median value, n frames 
     for frame, xy in cache.items():
-
+        # logger.info("%s, %s", frame, xy)
         # create neighbor array based on frame index
         forward, back = ([] for _ in range(2))
 
@@ -202,15 +202,16 @@ def read_openpose_json(openpose_output_dir, idx, is_debug=False):
             # holding frame drops for joint
             if not x_med:
                 # allow fix from first frame
-                if frame:
+                if frame > start_frame_index:
                     # get x from last frame
-                    x_med = smoothed[frame-1][x]
+                    # logger.info("frame %s, x %s", frame, x)
+                    x_med = smoothed[frame - start_frame_index -1][x]
             # if joint is hidden y
             if not y_med:
                 # allow fix from first frame
-                if frame:
+                if frame > start_frame_index:
                     # get y from last frame
-                    y_med = smoothed[frame-1][y]
+                    y_med = smoothed[frame - start_frame_index -1][y]
 
             # logger.debug("old X {0} sorted neighbor {1} new X {2}".format(xy[x],sorted(x_v), x_med))
             # logger.debug("old Y {0} sorted neighbor {1} new Y {2}".format(xy[y],sorted(y_v), y_med))
@@ -220,7 +221,7 @@ def read_openpose_json(openpose_output_dir, idx, is_debug=False):
             frames_joint_median[x+1] = y_med 
 
 
-        smoothed[frame] = frames_joint_median
+        smoothed[frame - start_frame_index] = frames_joint_median
 
     # return frames cache incl. smooth 18 joints (x,y)
     return start_frame_index, smoothed

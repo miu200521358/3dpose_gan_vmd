@@ -62,6 +62,6 @@ IF /I "%IS_DEBUG%" EQU "warn" (
 )
 
 rem ---  python é¿çs
-python bin/3dpose_gan_json.py --lift_model train/gen_epoch_500.npz --model2d openpose/pose_iter_440000.caffemodel --proto2d openpose/openpose_pose_coco.prototxt %OPENPOSE_JSON%  --person_idx %PERSON_IDX% --base-target %TARGET_DIR% --verbose %VERBOSE%
+python bin/3dpose_gan_json.py --lift_model train/gen_epoch_500.npz --model2d openpose/pose_iter_440000.caffemodel --proto2d openpose/openpose_pose_coco.prototxt --input %OPENPOSE_JSON%  --person_idx %PERSON_IDX% --base-target %TARGET_DIR% --verbose %VERBOSE%
 
 

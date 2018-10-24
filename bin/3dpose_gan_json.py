@@ -325,7 +325,7 @@ def main(args):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('input', help='Openpose result json (COCO)')
+    parser.add_argument('--input', help='Openpose result json (COCO)')
     parser.add_argument('--proto2d', help='Path to .prototxt', required=True)
     parser.add_argument('--model2d', help='Path to .caffemodel', required=True)
     parser.add_argument('--thr', default=0.1, type=float, help='Threshold value for pose parts heat map')
