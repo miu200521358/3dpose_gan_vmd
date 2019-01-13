@@ -34,10 +34,10 @@ IF /I "%TARGET_DIR%" EQU "" (
 rem ---  ‰f‘œ‚É‰f‚Á‚Ä‚¢‚éÅ‘ål”
 
 echo --------------
-echo ‰f‘œ/‰æ‘œ‚Ì‰ðÍŒ‹‰Ê‚Ì‚¤‚¿A‰½”Ô–Ú‚Ìl•¨‚ð‰ðÍ‚·‚é‚©1Žn‚Ü‚è‚Å“ü—Í‚µ‚Ä‰º‚³‚¢B
+echo ‰f‘œ‚Ì‰ðÍŒ‹‰Ê‚Ì‚¤‚¿A‰½”Ô–Ú‚Ìl•¨‚ð‰ðÍ‚·‚é‚©1Žn‚Ü‚è‚Å“ü—Í‚µ‚Ä‰º‚³‚¢B
 echo ‰½‚à“ü—Í‚¹‚¸AENTER‚ð‰Ÿ‰º‚µ‚½ê‡A1l–Ú‚Ì‰ðÍ‚É‚È‚è‚Ü‚·B
 set PERSON_IDX=1
-set /P PERSON_IDX="‰ðÍ‘ÎÛl•¨INDEX: "
+set /P PERSON_IDX="¡‰ðÍ‘ÎÛl•¨INDEX: "
 
 rem --echo PERSON_IDX: %PERSON_IDX%
 
@@ -51,7 +51,7 @@ echo Ú×ƒƒO‚Ìê‡AŠeƒtƒŒ[ƒ€‚²‚Æ‚ÌƒfƒoƒbƒO‰æ‘œ‚à’Ç‰Áo—Í‚³‚ê‚Ü‚·Bi‚»‚Ì•ªŽžŠ
 echo warn ‚ÆŽw’è‚·‚é‚ÆAƒAƒjƒ[ƒVƒ‡ƒ“GIF‚ào—Í‚µ‚Ü‚¹‚ñBi‚»‚Ì•ª‘‚¢‚Å‚·j
 set VERBOSE=2
 set IS_DEBUG=no
-set /P IS_DEBUG="Ú×ƒƒO[yes/no/warn]: "
+set /P IS_DEBUG="¡Ú×ƒƒO[yes/no/warn]: "
 
 IF /I "%IS_DEBUG%" EQU "yes" (
     set VERBOSE=3

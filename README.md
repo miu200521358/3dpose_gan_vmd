@@ -39,6 +39,7 @@ python3系 で以下をインストールして下さい
 1. [Openpose簡易起動バッチ](https://github.com/miu200521358/openpose-simple) で データを解析する
 1. [miu200521358/3d-pose-baseline-vmd](https://github.com/miu200521358/3d-pose-baseline-vmd) で生成された2D関節データ (smoothed.txt) を用意する
 1. [OpenposeTo3DGan.bat](OpenposeTo3DGan.bat) を実行する
+	- [OpenposeTo3DGan_en.bat](OpenposeTo3DGan_en.bat) is in English. !! The logs remain in Japanese.
 1. `解析結果JSONディレクトリパス` が聞かれるので、1.の`json出力ディレクトリパス`のフルパスを指定する
 1. `3D解析結果ディレクトリパス` が聞かれるので、2.の結果ディレクトリパスを指定する
 1. `出力対象人物INDEX` が聞かれるので、Openposeで読み取った人物のうち、何番目の人物を出力したいか、1始まりで指定する。
