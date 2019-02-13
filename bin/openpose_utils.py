@@ -29,6 +29,7 @@ def read_openpose_json(openpose_output_dir, idx, is_debug=False):
     # check for other file types
     json_files = sorted([filename for filename in json_files if filename.endswith(".json")])
     cache = {}
+    cache_confidence = {}
     smoothed = {}
     _past_tmp_points = []
     _past_tmp_data = []
@@ -36,6 +37,9 @@ def read_openpose_json(openpose_output_dir, idx, is_debug=False):
     ### extract x,y and ignore confidence score
     is_started = False
     start_frame_index = 0
+    end_frame_index = 0
+    # 実際の処理用フレームINDEX
+    frame_idx = 0
     for file_name in json_files:
         logger.debug("reading {0}".format(file_name))
         _file = os.path.join(openpose_output_dir, file_name)
@@ -113,14 +117,17 @@ def read_openpose_json(openpose_output_dir, idx, is_debug=False):
         _data = _tmp_data
 
         xy = []
-        #ignore confidence score
+        confidence = []
         for o in range(0,len(_data),3):
             xy.append(_data[o])
             xy.append(_data[o+1])
+            confidence.append(_data[o+2])
         
         logger.debug("found {0} for frame {1}".format(xy, str(frame_idx)))
         #add xy to frame
         cache[frame_idx] = xy
+        cache_confidence[frame_idx] = confidence
+        end_frame_index = frame_idx
 
     # plt.figure(1)
     # drop_curves_plot = show_anim_curves(cache, plt)
@@ -142,33 +149,26 @@ def read_openpose_json(openpose_output_dir, idx, is_debug=False):
 
     logger.info("start smoothing")
 
-    # create frame blocks
-    first_frame_block = [int(re.findall("(\d{12})", o)[0]) for o in json_files[:4]]
-    last_frame_block = [int(re.findall("(\d{12})", o)[0]) for o in json_files[-4:]]
+    # last frame of data
+    last_frame = [start_frame_index-1 for i in range(18)]
+
+    # threshold of confidence
+    confidence_th = 0.3
 
     ### smooth by median value, n frames 
     for frame, xy in cache.items():
-        # logger.info("%s, %s", frame, xy)
-        # create neighbor array based on frame index
-        forward, back = ([] for _ in range(2))
+        confidence = cache_confidence[frame]
 
         # joints x,y array
         _len = len(xy) # 36
 
-        # create array of parallel frames (-3<n>3)
-        for neighbor in range(1,4):
-            # first n frames, get value of xy in postive lookahead frames(current frame + 3)
-            if frame in first_frame_block:
-                # logger.debug ("first_frame_block: len(cache)={0}, frame={1}, neighbor={2}".format(len(cache), frame, neighbor))
-                forward += cache[frame+neighbor]
-            # last n frames, get value of xy in negative lookahead frames(current frame - 3)
-            elif frame in last_frame_block:
-                # logger.debug ("last_frame_block: len(cache)={0}, frame={1}, neighbor={2}".format(len(cache), frame, neighbor))
-                back += cache[frame-neighbor]
-            else:
-                # between frames, get value of xy in bi-directional frames(current frame -+ 3)     
-                forward += cache[frame+neighbor]
-                back += cache[frame-neighbor]
+        # frame range
+        smooth_n = 7 # odd number
+        one_side_n = int((smooth_n - 1)/2)
+        one_side_n = min([one_side_n, frame-start_frame_index, end_frame_index-frame])
+
+        smooth_start_frame = frame - one_side_n
+        smooth_end_frame = frame + one_side_n
 
         # build frame range vector 
         frames_joint_median = [0 for i in range(_len)]
@@ -177,41 +177,54 @@ def read_openpose_json(openpose_output_dir, idx, is_debug=False):
         for x in range(0,_len,2):
             # set x and y
             y = x+1
-            if frame in first_frame_block:
-                # get vector of n frames forward for x and y, incl. current frame
-                x_v = [xy[x], forward[x], forward[x+_len], forward[x+_len*2]]
-                y_v = [xy[y], forward[y], forward[y+_len], forward[y+_len*2]]
-            elif frame in last_frame_block:
-                # get vector of n frames back for x and y, incl. current frame
-                x_v =[xy[x], back[x], back[x+_len], back[x+_len*2]]
-                y_v =[xy[y], back[y], back[y+_len], back[y+_len*2]]
+            joint_no = int(x / 2)
+
+            x_v = []
+            y_v = []
+            for neighbor in range(smooth_start_frame, smooth_end_frame + 1):
+                if cache_confidence[neighbor][joint_no] >= confidence_th:
+                    x_v.append(cache[neighbor][x])
+                    y_v.append(cache[neighbor][y])
+
+            if len(x_v) >= 1:
+                # 配列の長さを奇数にする
+                if len(x_v) % 2 == 0:
+                    x_v.append(cache[frame][x])
+                    y_v.append(cache[frame][y])
+
+                # get median of vector
+                x_med = np.median(sorted(x_v))
+                y_med = np.median(sorted(y_v))
+
+                # 前のフレームが欠損している場合、今回のフレームのデータと前回最後に取得できたデータで線形補間する
+                if last_frame[joint_no] != frame -1:
+                    if last_frame[joint_no] < start_frame_index:
+                        # 過去に一度もデータを取得できなかった場合
+                        last_value_x = x_med
+                        last_value_y = y_med
+                    else:
+                        last_value_x = smoothed[last_frame[joint_no] - start_frame_index][x]
+                        last_value_y = smoothed[last_frame[joint_no] - start_frame_index][y]
+
+                    for frame_linear_in in range(last_frame[joint_no] + 1, frame):
+                        logger.debug("frame_linear_in: %s, start_frame_index: %s, x: %s, last_value_x: %s, x_med: %s, joint_no: %s, frame: %s, last_frame[joint_no]: %s", frame_linear_in, start_frame_index, x, last_value_x, x_med, joint_no, frame, last_frame[joint_no])
+                        smoothed[frame_linear_in - start_frame_index][x] = last_value_x + (x_med - last_value_x) * (frame_linear_in - last_frame[joint_no]) / (frame - last_frame[joint_no])
+                        smoothed[frame_linear_in - start_frame_index][y] = last_value_y + (y_med - last_value_y) * (frame_linear_in - last_frame[joint_no]) / (frame - last_frame[joint_no])
+
+                last_frame[joint_no] = frame
+
             else:
-                # get vector of n frames forward/back for x and y, incl. current frame
-                # median value calc: find neighbor frames joint value and sorted them, use numpy median module
-                # frame[x1,y1,[x2,y2],..]frame[x1,y1,[x2,y2],...], frame[x1,y1,[x2,y2],..]
-                #                 ^---------------------|-------------------------^
-                x_v =[xy[x], forward[x], forward[x+_len], forward[x+_len*2],
-                        back[x], back[x+_len], back[x+_len*2]]
-                y_v =[xy[y], forward[y], forward[y+_len], forward[y+_len*2],
-                        back[y], back[y+_len], back[y+_len*2]]
-
-            # get median of vector
-            x_med = np.median(sorted(x_v))
-            y_med = np.median(sorted(y_v))
-
-            # holding frame drops for joint
-            if not x_med:
+                # holding frame drops for joint
                 # allow fix from first frame
                 if frame > start_frame_index:
                     # get x from last frame
                     # logger.info("frame %s, x %s", frame, x)
                     x_med = smoothed[frame - start_frame_index -1][x]
-            # if joint is hidden y
-            if not y_med:
-                # allow fix from first frame
-                if frame > start_frame_index:
                     # get y from last frame
                     y_med = smoothed[frame - start_frame_index -1][y]
+                else:
+                    x_med = 0
+                    y_med = 0
 
             # logger.debug("old X {0} sorted neighbor {1} new X {2}".format(xy[x],sorted(x_v), x_med))
             # logger.debug("old Y {0} sorted neighbor {1} new Y {2}".format(xy[y],sorted(y_v), y_med))

@@ -185,7 +185,7 @@ def main(args):
     chainer.serializers.load_npz(args.lift_model, model)
 #    cap = cv.VideoCapture(args.input if args.input else 0)
 
-    # 3d-pose-baseline の日付+indexディレクトリを基準とする
+    # 深度推定結果ディレクトリ({動画名}_json_{実行日時}_idx00)
     subdir = args.base_target
 
     frame3d_dir = "{0}/frame3d_gan".format(subdir)
@@ -197,12 +197,13 @@ def main(args):
     #正規化済みOpenpose位置情報ファイル
     smoothedf = open(subdir +'/smoothed_gan.txt', 'w')
 
-    start_frame_index, smoothed = openpose_utils.read_openpose_json(args.input, 0)
+    start_frame_index, smoothed = openpose_utils.read_openpose_json("{0}/json".format(subdir), 0)
 
     before_pose = None
     png_lib = []
     for n, (frame, xy) in enumerate(smoothed.items()):
-        logger.info("calc idx {0}, frame {1}".format(0, frame))
+        if frame % 100 == 0:
+            logger.info("calc idx {0}, frame {1}".format(0, frame))
 
         logger.debug("xy")
         logger.debug(xy)
@@ -325,7 +326,6 @@ def main(args):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input', help='Openpose result json (COCO)')
     parser.add_argument('--proto2d', help='Path to .prototxt', required=True)
     parser.add_argument('--model2d', help='Path to .caffemodel', required=True)
     parser.add_argument('--thr', default=0.1, type=float, help='Threshold value for pose parts heat map')
