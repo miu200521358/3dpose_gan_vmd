@@ -9,8 +9,9 @@
 - [OpenPose](https://github.com/CMU-Perceptual-Computing-Lab/openpose) で検出された人体の骨格構造から、3Dの人体モデルを生成します。
 - 3Dの人体モデルを生成する際に、関節データを出力します
     - 関節データを [VMD-3d-pose-baseline-multi](https://github.com/miu200521358/VMD-3d-pose-baseline-multi) で読み込む事で、vmd(MMDモーションデータ)ファイルを生成できます
-- 複数人数のOpenPoseデータを解析（正確には、解析対象人物INDEXを指定）できます。
-    - 2018/05/07 時点では正確に解析できません。1人のみの解析を試してください。
+- 複数人数のOpenPoseデータを解析できます。
+    - ~~2018/05/07 時点では正確に解析できません。1人のみの解析を試してください。~~
+    - ver1.00(2019/02/13) で複数人数のトレースに対応しました。詳細は、[FCRN-DepthPrediction-vmd](https://github.com/miu200521358/FCRN-DepthPrediction-vmd) を確認してください。
 
 ## 準備
 
