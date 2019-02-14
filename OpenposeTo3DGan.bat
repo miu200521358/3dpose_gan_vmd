@@ -7,40 +7,19 @@ rem ---
 rem ---  カレントディレクトリを実行先に変更
 cd /d %~dp0
 
-rem ---  解析結果JSONディレクトリパス
-echo Openposeの解析結果のJSONディレクトリのフルパスを入力して下さい。
+rem ---  INDEX別ディレクトリパス
+echo INDEX別ディレクトリのフルパスを入力して下さい。({動画名}_json_{実行日時}_idx00)
+echo pos.txtなどのあるディレクトリです。
 echo この設定は半角英数字のみ設定可能で、必須項目です。
-set OPENPOSE_JSON=
-set /P OPENPOSE_JSON=■解析結果JSONディレクトリパス: 
-rem echo OPENPOSE_JSON：%OPENPOSE_JSON%
-
-IF /I "%OPENPOSE_JSON%" EQU "" (
-    ECHO 解析結果JSONディレクトリパスが設定されていないため、処理を中断します。
-    EXIT /B
-)
-
-rem ---  3d-pose-baseline-vmd解析結果JSONディレクトリパス
-echo 3d-pose-baseline-vmdの解析結果ディレクトリの絶対パスを入力して下さい。(3d_{実行日時}_idx00)
-echo この設定は半角英数字のみ設定可能で、必須項目です。
+echo ,(カンマ)で5件まで設定可能です。
 set TARGET_DIR=
-set /P TARGET_DIR=■3d-pose-baseline-vmd 解析結果ディレクトリパス: 
+set /P TARGET_DIR=■INDEX別ディレクトリパス: 
 rem echo TARGET_DIR：%TARGET_DIR%
 
 IF /I "%TARGET_DIR%" EQU "" (
-    ECHO 3D解析結果ディレクトリパスが設定されていないため、処理を中断します。
+    ECHO INDEX別ディレクトリパスが設定されていないため、処理を中断します。
     EXIT /B
 )
-
-rem ---  映像に映っている最大人数
-
-echo --------------
-echo 映像の解析結果のうち、何番目の人物を解析するか1始まりで入力して下さい。
-echo 何も入力せず、ENTERを押下した場合、1人目の解析になります。
-set PERSON_IDX=1
-set /P PERSON_IDX="■解析対象人物INDEX: "
-
-rem --echo PERSON_IDX: %PERSON_IDX%
-
 
 rem ---  詳細ログ有無
 
@@ -62,6 +41,6 @@ IF /I "%IS_DEBUG%" EQU "warn" (
 )
 
 rem ---  python 実行
-python bin/3dpose_gan_json.py --lift_model train/gen_epoch_500.npz --model2d openpose/pose_iter_440000.caffemodel --proto2d openpose/openpose_pose_coco.prototxt --input %OPENPOSE_JSON%  --person_idx %PERSON_IDX% --base-target %TARGET_DIR% --verbose %VERBOSE%
+python bin/3dpose_gan_json.py --lift_model train/gen_epoch_500.npz --model2d openpose/pose_iter_440000.caffemodel --proto2d openpose/openpose_pose_coco.prototxt --person_idx 1 --base-target %TARGET_DIR% --verbose %VERBOSE%
 
 

@@ -38,18 +38,18 @@ python3系 で以下をインストールして下さい
 
 1. [Openpose簡易起動バッチ](https://github.com/miu200521358/openpose-simple) で データを解析する
 1. [miu200521358/3d-pose-baseline-vmd](https://github.com/miu200521358/3d-pose-baseline-vmd) で生成された2D関節データ (smoothed.txt) を用意する
+1. [深度推定](https://github.com/miu200521358/FCRN-DepthPrediction-vmd)で 深度推定と人物インデックス別のデータを生成する
 1. [OpenposeTo3DGan.bat](OpenposeTo3DGan.bat) を実行する
 	- [OpenposeTo3DGan_en.bat](OpenposeTo3DGan_en.bat) is in English. !! The logs remain in Japanese.
-1. `解析結果JSONディレクトリパス` が聞かれるので、1.の`json出力ディレクトリパス`のフルパスを指定する
-1. `3D解析結果ディレクトリパス` が聞かれるので、2.の結果ディレクトリパスを指定する
-1. `出力対象人物INDEX` が聞かれるので、Openposeで読み取った人物のうち、何番目の人物を出力したいか、1始まりで指定する。
-	- 未指定の場合、デフォルトで1が設定される(１人目の解析)
+1. `INDEX別ディレクトリパス` が聞かれるので、3.の`人物インデックス別パス`のフルパスを指定する
+	- `{動画ファイル名}_json_{実行日時}_index{0F目の左からの順番}`
+	- 複数人数のトレースの場合、別々に実行が必要
 1. `詳細なログを出すか` 聞かれるので、出す場合、`yes` を入力する
     - 未指定 もしくは `no` の場合、通常ログ（各パラメータファイルと3D化アニメーションGIF）
     - `warn` の場合、3D化アニメーションGIFも生成しない（その分早い）
     - `yes`の場合、詳細ログを出力し、ログメッセージの他、デバッグ用画像も出力される（その分遅い）
 1. 処理開始
-1. 処理が終了すると、2.の結果ディレクトリパスに、以下の結果が出力される。
+1. 処理が終了すると、3. の`人物インデックス別パス`内に、以下の結果が出力される。
     - pos_gan.txt … 全フレームの関節データ([VMD-3d-pose-baseline-multi](https://github.com/miu200521358/VMD-3d-pose-baseline-multi) に必要) 詳細：[Output](https://github.com/miu200521358/3d-pose-baseline-vmd/blob/master/doc/Output.md)
     - smoothed_gan.txt … 全フレームの2D位置データ([VMD-3d-pose-baseline-multi](https://github.com/miu200521358/VMD-3d-pose-baseline-multi) に必要) 詳細：[Output](https://github.com/miu200521358/3d-pose-baseline-vmd/blob/master/doc/Output.md)
     - movie_smoothing_gan.gif … フレームごとの姿勢を結合したアニメーションGIF
@@ -88,9 +88,9 @@ LICENCE
 モーショントレース自動化キット
 【Openpose】：CMU　…　https://github.com/CMU-Perceptual-Computing-Lab/openpose
 【Openpose起動バッチ】：miu200521358　…　https://github.com/miu200521358/openpose-simple
+【深度推定】：Iro Laina, miu200521358　…　https://github.com/miu200521358/FCRN-DepthPrediction-vmd
 【Openpose→3D変換】：una-dinosauria, ArashHosseini, miu200521358　…　https://github.com/miu200521358/3d-pose-baseline-vmd
 【Openpose→3D変換その2】：Dwango Media Village, miu200521358：MIT　…　https://github.com/miu200521358/3dpose_gan_vmd
-【深度推定】：Iro Laina, miu200521358　…　https://github.com/miu200521358/FCRN-DepthPrediction-vmd
 【3D→VMD変換】： errno-mmd, miu200521358 　…　https://github.com/miu200521358/VMD-3d-pose-baseline-multi
 ```
 
